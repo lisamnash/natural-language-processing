@@ -2,6 +2,7 @@ import nltk
 import pickle
 import re
 import numpy as np
+import csv
 
 nltk.download('stopwords')
 from nltk.corpus import stopwords
@@ -12,7 +13,7 @@ RESOURCE_PATH = {
     'TAG_CLASSIFIER': 'tag_classifier.pkl',
     'TFIDF_VECTORIZER': 'tfidf_vectorizer.pkl',
     'THREAD_EMBEDDINGS_FOLDER': 'thread_embeddings_by_tags',
-    'WORD_EMBEDDINGS': 'word_embeddings.tsv',
+    'WORD_EMBEDDINGS': './data/starspace_embedding.tsv',
 }
 
 
@@ -46,22 +47,39 @@ def load_embeddings(embeddings_path):
     # Note that here you also need to know the dimension of the loaded embeddings.
     # When you load the embeddings, use numpy.float32 type as dtype
 
-    ########################
-    #### YOUR CODE HERE ####
-    ########################
+    import numpy as np
+    starspace_embedding = {}
+    import csv
+    with open(embeddings_path, newline='') as embedding_file:
+        reader = csv.reader(embedding_file, delimiter='\t')
+        embedding_file_lines = list(reader)
+        for line in embedding_file_lines:
+            word = line[0]
+            embedding = np.array(line[1:]).astype(np.float32)
+            starspace_embedding[word] = embedding
+    dimension = len(line)-1
+    return starspace_embedding, dimension
 
-        pass 
+
+
 
 def question_to_vec(question, embeddings, dim):
     """Transforms a string to an embedding by averaging word embeddings."""
-    
-    # Hint: you have already implemented exactly this function in the 3rd assignment.
 
-    ########################
-    #### YOUR CODE HERE ####
-    ########################
+    """
+            question: a string
+            embeddings: dict where the key is a word and a value is its' embedding
+            dim: size of the representation
 
-        pass
+            result: vector representation for the question
+        """
+    words = question.split()  # i'll just assume that we have no punctuation or caps we need to deal with)
+    embedding_vecs = np.array([embeddings[word] for word in words if word in embeddings])
+
+    if len(embedding_vecs) > 0:
+        return np.mean(embedding_vecs, axis=0)
+    else:
+        return np.zeros(dim)
 
 
 def unpickle_file(filename):
